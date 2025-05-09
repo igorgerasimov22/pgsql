@@ -1,0 +1,10 @@
+[barman]
+host={{ barman_host }}
+username=barman
+
+[postgres_master]
+description = "PostgreSQL Master"
+ssh_command = ssh postgres@{{ primary_host }}
+conninfo = host={{ primary_host }} user=postgres dbname=postgres
+backup_method = rsync
+incremental_backup = true

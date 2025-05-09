@@ -1,0 +1,49 @@
+---
+- name: Setup Barman for PostgreSQL Backup
+  hosts: barman_server
+  become: yes
+  tasks:
+    - name: Install necessary packages
+      yum:
+        name:
+          - barman
+          - openssh-server
+        state: present
+
+    - name: Create Barman configuration directory
+      file:
+        path: /etc/barman.d
+        state: directory
+
+    - name: Copy Barman configuration file
+      template:
+        src: templates/barman.conf.j2
+        dest: /etc/barman.d/postgres_master.conf
+      notify:
+        - restart barman
+
+    - name: Ensure Barman user exists
+      user:
+        name: barman
+        shell: /bin/bash
+        state: present
+
+    - name: Set up Barman backup directory
+      file:
+        path: /var/lib/barman/postgres_master
+        state: directory
+        owner: barman
+        group: barman
+        mode: '0700'
+
+    - name: Start and enable Barman service
+      systemd:
+        name: barman
+        state: started
+        enabled: yes
+
+  handlers:
+    - name: restart barman
+      systemd:
+        name: barman
+        state: restarted

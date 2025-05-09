@@ -1,0 +1,43 @@
+---
+- name: Setup PostgreSQL Slave
+  hosts: postgres_slave
+  become: yes
+  tasks:
+    - name: Install PostgreSQL
+      yum:
+        name: postgresql-server
+        state: present
+
+    - name: Initialize PostgreSQL database
+      command: postgresql-setup initdb
+
+    - name: Copy PostgreSQL configuration files
+      template:
+        src: templates/postgresql.conf.j2
+        dest: /var/lib/pgsql/data/postgresql.conf
+      notify:
+        - restart postgresql
+
+    - name: Copy pg_hba configuration file
+      template:
+        src: templates/pg_hba.conf.j2
+        dest: /var/lib/pgsql/data/pg_hba.conf
+      notify:
+        - restart postgresql
+
+    - name: Copy recovery configuration file
+      template:
+        src: templates/recovery.conf.j2
+        dest: /var/lib/pgsql/data/recovery.conf
+      notify:
+        - restart postgresql
+
+    - name: Start and enable PostgreSQL
+      systemd:
+        name: postgresql
+        state: started
+        enabled: yes
+
+    - name: Set up replication
+      command: |
+        psql -c "SELECT pg_create_physical_replication_slot('replication_slot')"

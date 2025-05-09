@@ -1,0 +1,5 @@
+# PostgreSQL Client Authentication Configuration File
+# TYPE  DATABASE        USER            ADDRESS                 METHOD
+
+# Allow replication connections from the standby server
+host    replication     all             {{ ansible_host }}/32      md5
