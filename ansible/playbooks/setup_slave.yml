@@ -41,3 +41,9 @@
     - name: Set up replication
       command: |
         psql -c "SELECT pg_create_physical_replication_slot('replication_slot')"
+
+  handlers:
+  - name: restart postgresql
+    systemd:
+      name: postgresql
+      state: restarted
